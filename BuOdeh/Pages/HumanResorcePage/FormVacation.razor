@@ -1,0 +1,293 @@
+﻿@page "/app/recordvacation"
+@inject IHRServices _hr
+@inject IJSRuntime JSRuntime
+@inject ISnackbar Snackbar
+@inject IUser _user
+@inject IEmployee _employee
+@using System.Security.Claims
+
+@inject IWebHostEnvironment _hostingEnvironment
+@inject IPrivilege _privilege
+@inject NavigationManager navigation
+@attribute [Authorize]
+
+<PageTitle>Form Ijin / Libur</PageTitle>
+<Loader IsLoading="isProcessing"></Loader>
+<div class="content">
+    <div class="page-header">
+        <div class="page-title">
+            <h4>Form Ijin / Libur</h4>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            @if (FormSubmitted == false)
+            {
+                                   
+                    <div class="row">
+                        <div class="col-lg-4 col-sm-6 col-12">
+                            <div class="form-group" style="text-align: center !important;">
+                                <label>Tanggal Ijin / Libur</label>
+                                <div class="row">
+                                    <div class="col-lg-12 col-sm-12 col-12">
+                                        <RadzenDatePicker @bind-Value=@TanggalIjin DateFormat="d" Change="()=>ChangeDate()" Class="w-100" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-lg-4 col-sm-6 col-12">
+                            <div class="form-group" style="text-align: center !important;">
+                                <label>Tipe Ijin / Libur</label>
+                                <div class="row">
+                                    <div class="col-lg-12 col-sm-12 col-12">
+                                        <select class="form-control" @bind="TipeIjin">
+                                            <option value="IJIN">Ijin</option>
+                                            <option value="LIBUR">Libur</option>
+                                            <option value="SAKIT">Sakit</option>
+                                            <option value="SETENGAH HARI">Ijin Setengah Hari</option>
+                                            <option value="LEMBUR">Lembur</option>
+                                            <option value="DINAS">Dinas Luar</option>
+                                        </select>
+                                        <span style="font-style:italic;">Apabila anda ijin sakit, maka wajib meng-upload surat dokter, dan ketika masuk membawa surat dokter, apabila tidak akan dihitung sebagai ALPHA.</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                @if(TipeIjin == "SAKIT")
+                {
+                    <div class="row">
+                        <div class="col-lg-4 col-sm-6 col-12">
+                            <div class="form-group" style="text-align: center !important;">
+                                <label>Foto Surat Dokter</label>
+                                <div class="row">
+                                    <div class="col-lg-12 col-sm-12 col-12">
+                                        @if (PhotoViewer == string.Empty)
+                                        {
+                                            <img src="/img/noimage.png" alt="img">
+                                        }
+                                        else
+                                        {
+                                            <img src="@PhotoViewer" width="80" height="80">
+                                        }
+                                        <br />
+                                        <InputFile OnChange="OnFileChange" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+
+                    <div class="row">
+                        <div class="col-lg-4 col-sm-6 col-12">
+                            <div class="form-group" style="text-align: center !important;">
+                                <label>Alasan</label>
+                                <div class="row">
+                                    <div class="col-lg-12 col-sm-12 col-12">
+                                    <textarea type="text" style="width:100%;" @bind="Alasan" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <br /> <br />
+                    <div class="row">
+                        <div class="col-lg-12" style="text-align: center !important;">
+                            <input type="button" @onclick="@(e => Save())" class="btn btn-submit me-2" value="Simpan" />
+                        </div>
+                    </div>               
+            }
+            else
+            {
+                <div class="row">
+                    <div class="col-lg-4 col-sm-6 col-12">
+                        <div class="form-group" style="text-align: center !important;">
+                            <label style="font-size:24px; font-weight:bold;">Form Ijin / Libur berhasil disimpan.</label>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+    <!-- /product list -->
+</div>
+
+
+@code {
+    [CascadingParameter]
+    public Task<AuthenticationState> authenticationState { get; set; }
+    Perijinan master = new Perijinan();
+    UserMaster modelUser = new UserMaster();
+    Employee modelEmployee = new Employee();
+
+    private string PhotoViewer;
+    private string TipeIjin;
+    private string Alasan;
+    private string PhotoSuratDokter;
+    private DateTime? TanggalIjin;
+
+    MemoryStream uploadedFileStream;
+    string uploadedFileExtension;
+
+    string strMenu = "Form Vacation";
+
+    private bool FormSubmitted;
+    bool isProcessing = false;
+    private async Task ChangeDate()
+    {
+        master.ForDate = TanggalIjin.Value;
+        StateHasChanged();
+    }
+
+    async Task OnFileChange(InputFileChangeEventArgs e)
+    {
+        isProcessing = true;
+
+        try
+        {
+            var format = "image/png";
+            uploadedFileExtension = Path.GetExtension(e.File.Name);
+            uploadedFileStream = new();
+            var resized = await e.File.RequestImageFileAsync(e.File.ContentType, maxWidth: 500, maxHeight: 500);
+            using Stream fileStream = resized.OpenReadStream();
+            await fileStream.CopyToAsync(uploadedFileStream);
+
+            var fileString = $"data:{format};base64,{Convert.ToBase64String(uploadedFileStream.ToArray())}";
+            if (fileString == null)
+            {
+                PhotoViewer = string.Empty;
+            }
+            else
+            {
+                PhotoViewer = fileString;
+            }
+        }
+        catch (Exception ex)
+        {
+            PhotoViewer = string.Empty;
+        }
+
+        isProcessing = false;
+        StateHasChanged();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await authenticationState;
+        var currentUser = authState.User;
+        string userName = currentUser.FindFirst(ClaimTypes.Name).Value;
+        modelUser = await _user.UserProfile(userName);
+        modelEmployee = await _employee.GetbyUserId(modelUser.UserId);
+        PhotoSuratDokter = "";
+        PhotoViewer = "";
+        
+        //CheckPriviliagee        
+        await LoadData();
+
+        StateHasChanged();
+    }
+
+    public async Task<string> UploadFile(string userFolder)
+    {
+        isProcessing = true;
+
+        if(PhotoViewer == "")
+        {
+            return "";
+        }
+
+        var uploadDirectory = Path.Combine(_hostingEnvironment.WebRootPath, "uploads/perijinan/" + userFolder);
+        if (!Directory.Exists(uploadDirectory))
+        {
+            Directory.CreateDirectory(uploadDirectory);
+        }
+
+        var fileExtension = uploadedFileExtension;
+        var fileName = $"{Guid.NewGuid()}{fileExtension}";
+        var path = Path.Combine(uploadDirectory, fileName);
+        await using var fs = new FileStream(path, FileMode.Create);
+        //await file.OpenReadStream(file.Size).CopyToAsync(fs);
+        uploadedFileStream.Position = 0;
+        await uploadedFileStream.CopyToAsync(fs);
+        PhotoSuratDokter = fileName;
+
+        isProcessing = false;
+
+        return fileName;
+    }
+
+    private async Task LoadData()
+    {                
+        TanggalIjin = null;              
+        Alasan = string.Empty;
+        TipeIjin = string.Empty;
+        FormSubmitted = false;
+
+        StateHasChanged();
+    }
+
+    private async Task Save()
+    {
+        isProcessing = true;
+
+        if (TanggalIjin.HasValue == false || TipeIjin == string.Empty)
+        {
+            Snackbar.Add("Anda belum mengisi tanggal atau Tipe Ijin. Keduanya wajib diisi.", Severity.Error);
+            isProcessing = false;
+            return;
+        }
+
+        if (TipeIjin == "SAKIT")
+        {
+            string userFolder = modelEmployee.EmployeeId + "_" + modelEmployee.EmployeeName.Replace(" ", "_");
+            string fileName = await UploadFile(userFolder);
+
+            if (PhotoSuratDokter == "")
+            {
+                Snackbar.Add("Anda belum mengambil foto surat dokter.", Severity.Error);
+                isProcessing = false;
+                return;
+            }
+        }
+
+        DateTime now = DateTime.Now;
+
+        if(now.Date == TanggalIjin.Value.Date && TipeIjin == "LIBUR")
+        {
+            Snackbar.Add("Untuk pengajuan libur, harap mengajukan minimal 1 hari kerja sebelumnya.", Severity.Error);
+            isProcessing = false;
+            return;
+        }
+
+        master.ForDate = TanggalIjin.Value;
+        master.IsApproved = null;
+        master.ApprovalDescription = string.Empty;
+        master.SubmittedDesc = Alasan;
+        master.DateSubmitted = now;
+        master.SubmittedFor = TipeIjin;
+        master.EmployeeID = modelEmployee.EmployeeId;
+        master.DocPhoto = PhotoSuratDokter;
+        
+        var result = await _hr.InsertPerijinan(master);
+
+        if (result > 0)
+        {
+            Snackbar.Add("Form Ijin telah berhasil disimpan.", Severity.Success);
+            FormSubmitted = true;            
+        }
+        else
+        {
+            Snackbar.Add("Form Ijin gagal disimpan, silakan coba lagi, atau hubungi admin.", Severity.Error);
+        }
+
+        isProcessing = false;
+        StateHasChanged();
+    }
+}
