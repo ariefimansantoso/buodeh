@@ -1,7 +1,7 @@
 ﻿@page "/"
 @using BuOdeh.Components
 @using BuOdeh.ExceptionHandling;
-@layout LoginLayout
+@layout BuOdeh.Shared.LoginLayout
 @inject UserAccountService userAccountService
 @inject ICurrency _currency
 @inject ICompany _company
@@ -19,7 +19,7 @@
         <div class="account-content">
             <div class="login-wrapper">
                 <div class="login-img">
-                    <img src="img/login-v2.svg" alt="img">
+                    <img src="img/login.jpg" alt="img">
                 </div>
                 <div class="login-content">
                     <div class="login-userset">

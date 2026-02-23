@@ -150,16 +150,16 @@
             //location = result;
             location = new Location
             {
-                Latitude = -8.284643,
-                Longitude = 113.534056
+                Latitude = -6.398186284277112,
+                Longitude = 106.88466330116204
             };
 
             var boundary = new GeoBoundary
                 {
-                    MinLatitude = -8.285350737880993,
-                    MaxLatitude = -8.283251719937075,
-                    MinLongitude = 113.53280383586056,
-                    MaxLongitude = 113.53530775154285
+                    MinLatitude = -6.396818876551414,
+                    MaxLatitude = -6.400305692251957,
+                    MinLongitude = 106.88387421532687,
+                    MaxLongitude = 106.88700012323365
                 };
 
             WithinBoundaries = true; //boundary.IsPointWithinBoundary(location.Latitude, location.Longitude);
@@ -227,7 +227,7 @@
                 WithinBoundaries = true;
             }
 
-            auditMessage = "Apakah di area kandang? " + (WithinBoundaries ? "Ya" : "Tidak");
+            auditMessage = "Apakah di area pabrik? " + (WithinBoundaries ? "Ya" : "Tidak");
             await _audit.LogAsync(LogTypes.LogInfo, "Form Absensi", auditMessage, modelEmployee.EmployeeId, modelEmployee.EmployeeName);
 
             await LoadData();
@@ -348,33 +348,6 @@
             string userFolder = modelEmployee.EmployeeId + "_" + modelEmployee.EmployeeName.Replace(" ", "_");
             string fileName = await UploadFile(userFolder);
 
-            // if (modelEmployee.EmployeeId != 5 && modelEmployee.EmployeeId != 6)
-            // {
-                if (WaktuAbsensi == "Absensi Pulang")
-                {
-                    var employeeInKandang = _db.EmployeeKandang.Where(x => x.EmployeeID == modelEmployee.EmployeeId).FirstOrDefault();
-                    if (employeeInKandang != null && !string.IsNullOrEmpty(employeeInKandang.NomorKandang))
-                    {
-                        var nomorKandang = employeeInKandang.NomorKandang.Split(',', StringSplitOptions.RemoveEmptyEntries);
-                        foreach (var nk in nomorKandang)
-                        {
-                            var cageNumber = Helper.ConvertCageNumber(nk);
-                            var alreadyInput = _db.LogPopulasiAnakKandang.Where(x => x.EmployeeID == modelEmployee.EmployeeId && x.RecordDate == DateTime.Today && x.CageNumber == cageNumber)
-                                                        .FirstOrDefault();
-
-                            if (alreadyInput == null)
-                            {
-                                // belum input populasi.
-                                auditMessage.AppendLine("Error belum input Populasi.");
-                                await _audit.LogAsync(LogTypes.LogError, "Form Absensi", auditMessage.ToString(), modelEmployee.EmployeeId, modelEmployee.EmployeeName);
-
-                                Snackbar.Add("Anda belum input Populasi.", Severity.Error);
-                                return;
-                            }
-                        }
-                    }
-                }
-            //}
 
             if (PhotoSelfie == string.Empty)
             {

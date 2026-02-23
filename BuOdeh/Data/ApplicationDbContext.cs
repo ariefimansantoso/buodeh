@@ -4,10 +4,8 @@ using BuOdeh.Data.Authentication;
 using BuOdeh.Data.BudgetModel;
 using BuOdeh.Data.HrPayroll;
 using BuOdeh.Data.Inventory;
-using BuOdeh.Data.Recording;
 using BuOdeh.Data.Setting;
 using System.Reflection.Emit;
-using static BuOdeh.Pages.DailyRecording.SetAnakKandang;
 
 namespace BuOdeh.Data
 {
@@ -21,8 +19,6 @@ namespace BuOdeh.Data
         {
             base.OnModelCreating(builder);
 
-			builder.Entity<DailyRecording>()
-			    .HasKey(dr => new { dr.CageNumber, dr.RecordDate, dr.StrainName });
 		}
         public DbSet<Role> Role { get; set; }
         public DbSet<UserMaster> UserMaster { get; set; }
@@ -90,25 +86,15 @@ namespace BuOdeh.Data
         //Budget
         public DbSet<BudgetMaster> BudgetMaster { get; set; }
         public DbSet<BudgetDetails> BudgetDetails { get; set; }
-        public DbSet<DailyRecording> DailyRecording { get; set; }
-        public DbSet<Kandang> Kandang { get; set; }
-        public DbSet<DailyEggPickup> DailyEggPickup { get; set; }
         
-        public DbSet<StockGudang> StockGudang { get; set; }
-        public DbSet<StockPenjualan> StockPenjualan { get; set; }
-        public DbSet<StockTelurUtuh> StockTelurUtuh { get; set; }
         public DbSet<AuditLog> AuditLog { get; set; }
 		
-		public DbSet<DailyRecordingVOV> DailyRecordingVOV { get; set; }
-        public DbSet<ChecklistPakanItem> ChecklistPakan { get; set; }
-        public DbSet<RecordNota> RecordNota { get; set; }
-        public DbSet<MutasiStockTelurHarian> MutasiStockTelurHarian { get; set; }
 		
 		public DbSet<Pengumuman> Pengumuman { get; set; }
         public DbSet<StandardData> StandardData { get; set; }
         public DbSet<EmployeeKandang> EmployeeKandang { get; set; }
         public DbSet<SalaryHistory> SalaryHistory { get; set; }
-        
-        public DbSet<LogPopulasiAnakKandang> LogPopulasiAnakKandang { get; set; }
-	}
+        public DbSet<Recipe> Recipes { get; set; }
+
+    }
 }

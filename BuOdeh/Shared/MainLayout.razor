@@ -102,9 +102,7 @@
 													<li><a href="/app/customer">Pelanggan</a></li>
 												</ul>
 											</li>
-											<li class="">
-												<a href="/app/currentprices"><img src="assets/img/icons/purchase1.svg" alt="img"><span>Harga Terkini</span></a>											
-											</li>
+											
 											<li class="submenu">
 												<a href="javascript:void(0);"><img src="assets/img/icons/purchase1.svg" alt="img"><span> Pengeluaran</span> <span class="menu-arrow"></span></a>
 												<ul>
@@ -116,23 +114,7 @@
 												</ul>
 											</li>
 										}
-										@if (currentUserRole == "Picking" || currentUserRole == "Admin")
-										{
-											<li class="submenu">
-												<a href="javascript:void(0);"><img src="assets/img/icons/purchase1.svg" alt="img"><span> Picking</span> <span class="menu-arrow"></span></a>
-												<ul>
-													<li><a href="/app/pickingscan">Scan Picking</a></li>
-													<li><a href="/app/returscan">Scan Retur</a></li>
-													<li><a href="/app/addsalesstock">Atur Stok Jualan</a></li>
-													<li><a href="/app/checkliststocksales">Terima Stock Jualan</a></li>
-													<li><a href="/app/stockcheck">Cek Stok Produksi</a></li>
-													<li><a href="/app/eggretur">Form Pengembalian Telur</a></li>
-													<li><a href="/app/reportstock">Laporan Stok Harian</a></li>
-													<li><a href="/app/formnota">Form Input Nota</a></li>
-													<li><a href="/app/reportnota">Laporan Input Nota</a></li>
-												</ul>
-											</li>
-										}
+										
 										@if (currentUserRole == "Sales" || currentUserRole == "Purchase" || currentUserRole == "Admin")
 										{
 											<li class="submenu">
@@ -180,31 +162,7 @@
 													<li><a href="/app/adminperijinan">Laporan Perijinan</a></li>
 													<li><a href="/app/penaltylist">Laporan Sanksi</a></li>
 												</ul>
-											</li>
-											<li class="submenu">
-												<a href="javascript:void(0);"><img src="assets/img/icons/dollar-square.svg" alt="img"><span>Recording</span> <span class="menu-arrow"></span></a>
-												<ul>
-													<li><a href="/app/henpopulation">Populasi</a></li>
-													<li><a href="/app/foodintake">Food Intake/Konsumsi Pakan</a></li>
-													<li><a href="/app/eggproduction">Produksi Telur</a></li>
-													<li><a href="javascript:void(0);">Informasi Hen Day</a></li>
-													<li><a href="/app/recordingreportscage">Laporan Input Telur</a></li>
-													<li><a href="/app/recordingreports">Laporan Recording</a></li>
-													<li><a href="/app/setanakkandang">Daftar Anak Kandang</a></li>
-												</ul>
-											</li>
-											<li class="submenu">
-												<a href="javascript:void(0);"><img src="assets/img/icons/dollar-square.svg" alt="img"><span>Gudang Telur</span> <span class="menu-arrow"></span></a>
-												<ul>
-													<li><a href="/app/checklistegg">Ambil Telur</a></li>
-													<li><a href="/app/eggverification">Timbang Telur</a></li>
-													<li><a href="/app/addsalesstock">Atur Stok Jualan</a></li>
-													<li><a href="/app/checkliststocksales">Terima Stock Jualan</a></li>
-													<li><a href="/app/stockcheck">Cek Stok Produksi</a></li>
-													<li><a href="/app/eggretur">Form Pengembalian Telur</a></li>
-													<li><a href="/app/reportstock">Laporan Stok Harian</a></li>
-												</ul>
-											</li>
+											</li>																					
 										}
 										@if (currentUserRole != "Admin")
 										{
@@ -218,74 +176,10 @@
 												</ul>
 											</li>										
 										}
-										@if(currentUserRole == "Kandang")
-										{
-											<li class="submenu">
-												<a href="javascript:void(0);"><img src="assets/img/icons/dollar-square.svg" alt="img"><span>Recording</span> <span class="menu-arrow"></span></a>
-												<ul>
-													<li><a href="/app/henpopulation">Populasi</a></li>
-													<li><a href="/app/foodintake">Food Intake/Konsumsi Pakan</a></li>
-													<li><a href="/app/eggproduction">Produksi Telur</a></li>
-													<li><a href="javascript:void(0);">Informasi Hen Day</a></li>
-													<li><a href="/app/recordingreportscage">Laporan Recording</a></li>
-													<li><a href="/app/stockcheck">Cek Stok Produksi</a></li>
-												</ul>
-											</li>
-										}
-										@if (currentUserRole == "Packaging")
-										{
-											<li class="submenu">
-												<a href="javascript:void(0);"><img src="assets/img/icons/dollar-square.svg" alt="img"><span>Gudang Telur</span> <span class="menu-arrow"></span></a>
-												<ul>
-													<li><a href="/app/checklistegg">Ambil Telur</a></li>
-													<li><a href="/app/eggverification">Timbang Telur</a></li>
-													<li><a href="/app/addsalesstock">Atur Stok Jualan</a></li>
-													<li><a href="/app/stockcheck">Cek Stok Produksi</a></li>
-													<li><a href="/app/reportstock">Laporan Stok Harian</a></li>
-												</ul>
-											</li>
-										}
-										@if (modelEmployee.EmployeeId == 63)
-										{
-											<li class="submenu">
-												<a href="javascript:void(0);"><img src="assets/img/icons/dollar-square.svg" alt="img"><span>Logistics</span> <span class="menu-arrow"></span></a>
-												<ul>
-													<li><a href="/app/henpopulation">Populasi</a></li>
-													<li><a href="/app/foodintake">Food Intake/Konsumsi Pakan</a></li>
-													<li><a href="/app/concentrateform">Konsentrat Per Kandang</a></li>
-													<li><a href="/app/eggproduction">Produksi Telur</a></li>
-													<li><a href="/app/recordingvov">Recording VOV Kandang</a></li>
-													<li><a href="/app/recordingvovbyobat">Recording VOV Obat</a></li>
-													@* <li><a href="javascript:void(0);">Informasi Hen Day</a></li> *@
-													<li><a href="/app/recordingreports">Laporan Recording</a></li>
-												</ul>
-											</li>
-										}
+										
 										@if (currentUserRole == "Admin")
 										{											
-											<li class="submenu">
-												<a href="javascript:void(0);"><img src="assets/img/icons/dollar-square.svg" alt="img"><span>Recording</span> <span class="menu-arrow"></span></a>
-												<ul>
-													<li><a href="/app/henpopulation">Populasi</a></li>
-													<li><a href="/app/foodintake">Food Intake/Konsumsi Pakan</a></li>													
-													<li><a href="/app/eggproduction">Produksi Telur</a></li>
-													<li><a href="/app/concentrateform">Ganti Konsentrat Per Kandang</a></li>
-													<li><a href="/app/recordingvov">Recording VOV Kandang</a></li>
-													<li><a href="/app/recordingvovbyobat">Recording VOV Obat</a></li>
-													<li><a href="/app/setperiodebaru">Set Periode Baru</a></li>												
-													<li><a href="/app/recordingreports">Laporan Recording</a></li>	
-													<li><a href="/app/setanakkandang">Daftar Anak Kandang</a></li>
-												</ul>
-											</li>
-											<li class="submenu">
-												<a href="javascript:void(0);"><img src="assets/img/icons/dollar-square.svg" alt="img"><span>Packaging</span> <span class="menu-arrow"></span></a>
-												<ul>
-													<li><a href="/app/checklistegg">Ambil Telur</a></li>
-													<li><a href="/app/eggverification">Timbang Telur</a></li>
-													<li><a href="/app/addsalesstock">Atur Stok Jualan</a></li>
-												</ul>
-											</li>
-											///
+											
 											<li class="submenu">
 											<a href="javascript:void(0);"><img src="assets/img/icons/dollar-square.svg" alt="img"><span>Anggaran</span> <span class="menu-arrow"></span></a>
 											<ul>
@@ -293,16 +187,9 @@
 												<li><a href="/app/budgetvariance">Budget Variance</a></li>
 											</ul>
 										</li>
-											<li class="">
-												<a href="/app/mixingpakan"><img src="assets/img/icons/purchase1.svg" alt="img"><span>Mixing Pakan</span></a>
-											</li>
+											
 										}
-										@if (modelEmployee.EmployeeId == 63)
-										{
-											<li class="">
-												<a href="/app/mixingpakan"><img src="assets/img/icons/purchase1.svg" alt="img"><span>Mixing Pakan</span></a>
-											</li>
-										}
+										
 										@if (currentUserRole == "Sales" || currentUserRole == "Purchase" || currentUserRole == "Admin")
 										{
 											<li class="submenu">
@@ -317,12 +204,7 @@
 										}
 										@if (currentUserRole == "Admin")
 										{
-											<li class="">
-												<a href="/app/pricing"><img src="assets/img/icons/purchase1.svg" alt="img"><span>Set Harga</span></a>									
-											</li>
-											<li class="">
-												<a href="/app/resetsalesstock"><img src="assets/img/icons/purchase1.svg" alt="img"><span>Reset Stok Telur</span></a>
-											</li>
+											
 											<li class="">
 												<a href="/app/pengumuman"><img src="assets/img/icons/purchase1.svg" alt="img"><span>Set Pengumuman</span></a>
 											</li>
@@ -345,12 +227,12 @@
 											</li>
 
 											<li class="submenu">
-												<a href="javascript:void(0);"><img src="assets/img/icons/settings.svg" alt="img"><span> Configuration</span> <span class="menu-arrow"></span></a>
+												<a href="javascript:void(0);"><img src="assets/img/icons/settings.svg" alt="img"><span> Konfigurasi</span> <span class="menu-arrow"></span></a>
 												<ul>
-													<li><a href="/app/company">Apps</a></li>
+													<li><a href="/app/company">Informasi Perusahaan</a></li>
 													<li><a href="/app/invoicesetting">Invoice Settings</a></li>
 													<li><a href="/app/currency">Currency Settings</a></li>
-													<li><a href="/app/tax">Tax Rates</a></li>
+													<li><a href="/app/tax">Pajak</a></li>
 												</ul>
 											</li>
 										}

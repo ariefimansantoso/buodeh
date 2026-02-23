@@ -1,0 +1,271 @@
+﻿@page "/app/addrecipe"
+@inject IRecipeService _recipeService
+@inject IPricingService _pricing
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+@attribute [Authorize]
+
+<PageTitle>Add New Recipe</PageTitle>
+<Loader IsLoading="isProcessing"></Loader>
+
+<div class="content">
+    <div class="page-header">
+        <div class="page-title">
+            <h4>Add New Recipe</h4>
+            <h6>Define ingredients for your products (e.g., Peanut Cookie = Flour + Sugar + Peanut + Butter)</h6>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            @if (FormSubmitted == false)
+            {
+                <!-- Row 1: Parent Product (The finished good being made) -->
+                <div class="row">
+                    <div class="col-lg-6 col-sm-12 col-12">
+                        <div class="form-group">
+                            <label>Nama Produk yang dibuat <span class="text-danger">*</span></label>
+                            <select class="form-control" @bind="model.ProductId">
+                                <option value="0">-- Select Product to Make --</option>
+                                @foreach (var prod in ProductList)
+                                {
+                                    <option value="@prod.ProductId">@prod.ProductCode - @prod.ProductName</option>
+                                }
+                            </select>
+                            <small class="form-text text-muted">Select the finished good you are creating (e.g., Peanut Cookie)</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Row 2: Ingredient (The item being used) -->
+                <div class="row">
+                    <div class="col-lg-6 col-sm-12 col-12">
+                        <div class="form-group">
+                            <label>Bahan-bahan (Input) <span class="text-danger">*</span></label>
+                            <select class="form-control" @bind="model.ProductIngredientId">
+                                <option value="0">-- Pilih Bahan Baku --</option>
+                                @foreach (var prod in ProductList)
+                                {
+                                    // Prevent selecting the parent product as an ingredient
+                                    @if (prod.ProductId != model.ProductId)
+                                    {
+                                        <option value="@prod.ProductId">@prod.ProductCode - @prod.ProductName</option>
+                                    }
+                                }
+                            </select>
+                            <small class="form-text text-muted">Select ingredients (e.g., Flour, Sugar, Peanut, Butter)</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Row 3: Quantity and UOM -->
+                <div class="row">
+                    <div class="col-lg-3 col-sm-6 col-12">
+                        <div class="form-group">
+                            <label>Jumlah <span class="text-danger">*</span></label>
+                            <input type="number" step="0.01" min="0.01" class="form-control" @bind="model.Quantity" placeholder="0.00" />
+                        </div>
+                    </div>
+
+                    <div class="col-lg-3 col-sm-6 col-12">
+                        <div class="form-group">
+                            <label>Satuan (UOM) <span class="text-danger">*</span></label>
+                            <select class="form-control" @bind="model.UOM">
+                                <option value="">-- Select Unit --</option>
+                                <option value="KG">KG (Kilogram)</option>
+                                <option value="GR">GR (Gram)</option>
+                                <option value="PCS">PCS (Pieces)</option>
+                                <option value="LTR">LTR (Liter)</option>
+                                <option value="ML">ML (Milliliter)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <br />
+                <div class="row">
+                    <div class="col-lg-12">
+                        <button type="button" @onclick="Save" class="btn btn-submit me-2">
+                            <i class="fa fa-save"></i> Simpan Resep
+                        </button>
+                        <button type="button" @onclick="Cancel" class="btn btn-cancel">
+                            <i class="fa fa-times"></i> Cancel
+                        </button>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <!-- Success Message -->
+                <div class="row">
+                    <div class="col-lg-12 col-sm-12 col-12">
+                        <div class="text-center" style="padding: 20px;">
+                            <div class="alert alert-success" role="alert">
+                                <h4 class="alert-heading">
+                                    <i class="fa fa-check-circle"></i> Success!
+                                </h4>
+                                <p>Recipe has been successfully added.</p>
+                                <hr />
+                                <p class="mb-0">
+                                    <strong>Product:</strong> @SuccessMessage
+                                </p>
+                            </div>
+                            <button type="button" class="btn btn-primary mt-3 me-2" @onclick="ResetForm">
+                                <i class="fa fa-plus"></i> Add Another Ingredient
+                            </button>
+                            <button type="button" class="btn btn-secondary mt-3" @onclick="GoToRecipeList">
+                                <i class="fa fa-list"></i> View All Recipes
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    // Model for the form
+    Recipe model = new Recipe();
+
+    // List to populate dropdowns
+    List<Product> ProductList = new List<Product>();
+
+    bool isProcessing = false;
+    bool FormSubmitted = false;
+    string SuccessMessage = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        isProcessing = true;
+        try
+        {
+            // Retrieve list of products to populate dropdowns
+            ProductList = await _recipeService.GetAllProducts();
+
+            if (ProductList == null || ProductList.Count == 0)
+            {
+                Snackbar.Add("No products found. Please create products first.", Severity.Warning);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add("Error loading products: " + ex.Message, Severity.Error);
+        }
+        finally
+        {
+            isProcessing = false;
+        }
+    }
+
+    private async Task Save()
+    {
+        isProcessing = true;
+
+        try
+        {
+            // 1. Validation
+            if (!ValidateForm())
+            {
+                isProcessing = false;
+                return;
+            }
+
+            // 2. Populate Product Name
+            var parentProd = ProductList.FirstOrDefault(x => x.ProductId == model.ProductId);
+            if (parentProd != null)
+            {
+                model.ProductName = parentProd.ProductName;
+            }
+
+            // 3. Save to Database
+            var result = await _recipeService.InsertRecipe(model);
+
+            if (result > 0)
+            {
+                var ingredientProd = ProductList.FirstOrDefault(x => x.ProductId == model.ProductIngredientId);
+                SuccessMessage = $"{parentProd?.ProductName ?? "Unknown"} + {ingredientProd?.ProductName ?? "Unknown"} ({model.Quantity} {model.UOM})";
+
+                Snackbar.Add("Recipe saved successfully.", Severity.Success);
+                FormSubmitted = true;
+            }
+            else
+            {
+                Snackbar.Add("Failed to save recipe.", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add("System Error: " + ex.Message, Severity.Error);
+        }
+        finally
+        {
+            isProcessing = false;
+            StateHasChanged();
+        }
+    }
+
+    private bool ValidateForm()
+    {
+        if (model.ProductId == 0)
+        {
+            Snackbar.Add("Please select the Parent Product.", Severity.Warning);
+            return false;
+        }
+
+        if (model.ProductIngredientId == 0)
+        {
+            Snackbar.Add("Please select an Ingredient.", Severity.Warning);
+            return false;
+        }
+
+        if (model.ProductId == model.ProductIngredientId)
+        {
+            Snackbar.Add("A product cannot be an ingredient of itself.", Severity.Warning);
+            return false;
+        }
+
+        if (model.Quantity <= 0)
+        {
+            Snackbar.Add("Quantity must be greater than 0.", Severity.Warning);
+            return false;
+        }
+
+        if (string.IsNullOrEmpty(model.UOM))
+        {
+            Snackbar.Add("Please select a Unit of Measure.", Severity.Warning);
+            return false;
+        }
+
+        return true;
+    }
+
+    private void ResetForm()
+    {
+        // Keep the Parent Product selected for adding multiple ingredients
+        int currentParentId = model.ProductId;
+
+        model = new Recipe
+        {
+            ProductId = currentParentId
+        };
+
+        FormSubmitted = false;
+        StateHasChanged();
+    }
+
+    private void Cancel()
+    {
+        Navigation.NavigateTo("/app/recipelist");
+    }
+
+    private void GoToRecipeList()
+    {
+        Navigation.NavigateTo("/app/recipelist");
+    }
+}

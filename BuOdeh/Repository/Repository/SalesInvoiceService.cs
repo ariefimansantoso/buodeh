@@ -3,7 +3,6 @@ using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using BuOdeh.Data;
 using BuOdeh.Data.Inventory;
-using BuOdeh.Data.Recording;
 using BuOdeh.Data.Setting;
 using BuOdeh.Repository.Interface;
 using BuOdeh.Services;
@@ -440,19 +439,7 @@ namespace BuOdeh.Repository.Repository
                         var employeeItem = await _context.Employee.FirstOrDefaultAsync(x => x.UserID == userItem.UserId);
                         if (productItem.ProductCode.StartsWith("TA-"))
                         {
-                            StockTelurUtuh stockTelurUtuh = _context.StockTelurUtuh.FirstOrDefault(x => x.ID == 1);
-                            // kurangi stock telur utuh dari gudang
-                            stockTelurUtuh.StockKG = stockTelurUtuh.StockKG - item.Qty;
-                            stockTelurUtuh.ModifiedBy = employeeItem.EmployeeId;
-                            stockTelurUtuh.ModifiedOn = DateTime.Now;
-                                                        
-                            MutasiStockTelurHarian mutasi = new MutasiStockTelurHarian();
-                            mutasi.JenisTelur = "UTUH";
-                            mutasi.BeratTelurIn = 0;
-                            mutasi.BeratTelurOut = item.Qty;
-                            mutasi.DateCreated = DateTime.Now;
-                            mutasi.CreatedBy = employeeItem.EmployeeId;
-                            _context.MutasiStockTelurHarian.Add(mutasi);
+                            
                         }
                         
                         StockPosting stockposting = new StockPosting();
@@ -516,36 +503,8 @@ namespace BuOdeh.Repository.Repository
                         stockposting.Date = model.Date;
                         stockposting.ProductId = item.ProductId;
                         stockposting.InwardQty = 0;
-						if (productItem.ProductCode.StartsWith("TA-"))
-						{
-							StockTelurUtuh stockTelurUtuh = _context.StockTelurUtuh.FirstOrDefault(x => x.ID == 1);
-							// kurangi stock telur utuh dari gudang
-							stockTelurUtuh.StockKG = stockTelurUtuh.StockKG + (stockposting.OutwardQty - item.Qty);
-							stockTelurUtuh.ModifiedBy = employeeItem.EmployeeId;
-							stockTelurUtuh.ModifiedOn = DateTime.Now;
+						
 
-                            string auditMessage = "Update stock UTUH dengan jumlah: " + item.Qty;
-                            var log = new AuditLog
-                            {
-                                EmployeeName = employeeItem.EmployeeName,
-                                CreatedDate = DateTime.Now,
-                                ActionType = "SalesInvoiceService",
-                                ActionDescription = auditMessage,
-                                EmployeeID = employeeItem.EmployeeId,
-                                LogType = LogTypes.LogInfo
-                            };
-
-                            _context.AuditLog.Add(log);
-
-                            MutasiStockTelurHarian mutasi = new MutasiStockTelurHarian();
-                            mutasi.JenisTelur = "UTUH";
-                            mutasi.BeratTelurIn = (stockposting.OutwardQty - item.Qty);
-                            mutasi.BeratTelurOut = 0;
-                            mutasi.DateCreated = DateTime.Now;
-                            mutasi.CreatedBy = employeeItem.EmployeeId;
-                            mutasi.Reason = "UPDATE";
-                            _context.MutasiStockTelurHarian.Add(mutasi);
-                        }
 						stockposting.OutwardQty = item.Qty;
 						stockposting.UnitId = item.UnitId;
                         stockposting.BatchId = item.BatchId;
@@ -838,45 +797,6 @@ namespace BuOdeh.Repository.Repository
                     var userItem = _context.UserMaster.FirstOrDefault(x => x.UserName == userName);
                     var employeeItem = _context.Employee.FirstOrDefault(x => x.UserID == userItem.UserId);
                     
-                    StockTelurUtuh stockTelurUtuh = _context.StockTelurUtuh.FirstOrDefault(x => x.ID == 1);
-                    // kurangi stock telur utuh dari gudang
-                    stockTelurUtuh.StockKG = stockTelurUtuh.StockKG - stockToAdd;
-                    stockTelurUtuh.ModifiedBy = employeeItem.EmployeeId;
-                    stockTelurUtuh.ModifiedOn = DateTime.Now;
-
-                    MutasiStockTelurHarian mutasi = new MutasiStockTelurHarian();
-                    mutasi.JenisTelur = "UTUH";
-                    mutasi.BeratTelurIn = 0;
-                    mutasi.BeratTelurOut = stockToAdd;
-                    mutasi.DateCreated = DateTime.Now;
-                    mutasi.CreatedBy = employeeItem.EmployeeId;
-                    mutasi.Reason = "SalesRestock";
-                    _context.MutasiStockTelurHarian.Add(mutasi);
-
-                    if (stockTelurUtuh != null)
-                    {
-						StockPosting stockposting = new StockPosting();
-						stockposting.Date = DateTime.Now;
-						stockposting.ProductId = productId;
-						stockposting.InwardQty = stockToAdd;
-						stockposting.OutwardQty = 0;
-						stockposting.UnitId = 0;
-						stockposting.BatchId = 0;
-						stockposting.Rate = 0;
-						stockposting.DetailsId = 0;
-						stockposting.InvoiceNo = productId.ToString();
-						stockposting.VoucherNo = productId.ToString();
-						stockposting.VoucherTypeId = 0;
-						stockposting.AgainstInvoiceNo = String.Empty;
-						stockposting.AgainstVoucherNo = String.Empty;
-						stockposting.AgainstVoucherTypeId = 0;
-						stockposting.WarehouseId = 1;
-						stockposting.StockCalculate = "SalesRestock";
-						stockposting.CompanyId = 1;
-						stockposting.FinancialYearId = 2;
-						stockposting.AddedDate = DateTime.Now;
-						_context.StockPosting.Add(stockposting);
-					}
 
                     _context.SaveChanges();
 				}

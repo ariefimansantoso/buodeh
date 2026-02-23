@@ -1,4 +1,4 @@
-﻿using BuOdeh.Data.Recording;
+﻿
 using BuOdeh.Data;
 using BuOdeh.Repository.Interface;
 using Microsoft.EntityFrameworkCore;
@@ -16,23 +16,13 @@ namespace BuOdeh.Constants
 
         public async Task<DateTime> Get()
         {
-            var telurUtuh = await _context.StockTelurUtuh.FirstOrDefaultAsync();
-            if(telurUtuh != null)
-            {
-                return telurUtuh.StockDate;
-            }
-
+            
             return new DateTime(1990,1,1);
         }
 
         public DateTime GetSync()
         {
-            var telurUtuh = _context.StockTelurUtuh.FirstOrDefault();
-            if (telurUtuh != null)
-            {
-                return telurUtuh.StockDate;
-            }
-
+            
             return new DateTime(1990, 1, 1);
         }
 

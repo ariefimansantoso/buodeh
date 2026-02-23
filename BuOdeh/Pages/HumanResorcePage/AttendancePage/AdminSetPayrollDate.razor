@@ -1,7 +1,6 @@
 ﻿@page "/app/adminsetpayroll"
 @using System.Security.Claims;
 @using Microsoft.EntityFrameworkCore;
-@using BuOdeh.Data.Recording;
 @using System.Transactions;
 @using System.Globalization;
 @using BuOdeh.Components
@@ -13,9 +12,7 @@
 @inject IWebHostEnvironment _hostingEnvironment
 @inject IPrivilege _privilege
 @inject NavigationManager navigation
-@inject IDailyRecordingService _recording
 @inject IKandangService _kandang
-@inject IDailyEggPickupService _egg
 @inject AuthenticationStateProvider authStateProvider
 @inject ApplicationDbContext _db
 @inject IAuditLogService _audit
