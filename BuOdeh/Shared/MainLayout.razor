@@ -153,7 +153,10 @@
 											</li>
 										}
 										@if(currentUserRole == "Supervisor")
-										{											
+										{
+											<li class="">
+												<a href="/app/employeeproductionlist"><img src="assets/img/icons/purchase1.svg" alt="img"><span>Daftar Produksi Karyawan</span></a>
+											</li>
 											<li class="submenu">
 												<a href="javascript:void(0);"><img src="assets/img/icons/users.svg" alt="img"><span>Absensi</span> <span class="menu-arrow"></span></a>
 												<ul>
@@ -178,16 +181,17 @@
 										}
 										
 										@if (currentUserRole == "Admin")
-										{											
-											
+										{
+											<li class="">
+												<a href="/app/employeeproductionlist"><img src="assets/img/icons/purchase1.svg" alt="img"><span>Daftar Produksi Karyawan</span></a>
+											</li>
 											<li class="submenu">
-											<a href="javascript:void(0);"><img src="assets/img/icons/dollar-square.svg" alt="img"><span>Anggaran</span> <span class="menu-arrow"></span></a>
-											<ul>
-												<li><a href="/app/budget">Anggaran</a></li>
-												<li><a href="/app/budgetvariance">Budget Variance</a></li>
-											</ul>
-										</li>
-											
+												<a href="javascript:void(0);"><img src="assets/img/icons/dollar-square.svg" alt="img"><span>Anggaran</span> <span class="menu-arrow"></span></a>
+												<ul>
+													<li><a href="/app/budget">Anggaran</a></li>
+													<li><a href="/app/budgetvariance">Budget Variance</a></li>
+												</ul>
+											</li>											
 										}
 										
 										@if (currentUserRole == "Sales" || currentUserRole == "Purchase" || currentUserRole == "Admin")

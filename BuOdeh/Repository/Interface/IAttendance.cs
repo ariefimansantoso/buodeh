@@ -25,5 +25,6 @@ namespace BuOdeh.Repository.Interface
 		List<DailyAttendanceMaster> GetAttendanceListByDateAndEmployeeId(int employeeID, DateTime date);
 		List<DailyAttendanceMaster> GetAttendanceCurrentPeriodeByEmployeeIdSync(int employeeID, DateTime startingPeriode, DateTime endingPeriode);
 		Task<List<DailyAttendanceMaster>> GetAttendanceCurrentPeriodeByEmployee(int employeeId, DateTime startingPeriode, DateTime endingPeriode);
+		Task<DailyAttendanceMaster> GetLatestAttendance(int employeeID);
     }
 }

@@ -67,6 +67,7 @@ namespace BuOdeh.Data
         public DbSet<DailySalaryVoucherDetails> DailySalaryVoucherDetails { get; set; }
         public DbSet<Designation> Designation { get; set; }
         public DbSet<Employee> Employee { get; set; }
+        public DbSet<EmployeeProduction> EmployeeProduction { get; set; }
         public DbSet<PayHead> PayHead { get; set; }
         public DbSet<SalaryPackage> SalaryPackage { get; set; }
         public DbSet<SalaryPackageDetails> SalaryPackageDetails { get; set; }
@@ -95,6 +96,5 @@ namespace BuOdeh.Data
         public DbSet<EmployeeKandang> EmployeeKandang { get; set; }
         public DbSet<SalaryHistory> SalaryHistory { get; set; }
         public DbSet<Recipe> Recipes { get; set; }
-
     }
 }

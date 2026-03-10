@@ -53,6 +53,7 @@ builder.Services.AddTransient<IPrivilege, PrivilegeService>();
 builder.Services.AddTransient<IPayHead, PayheadService>();
 builder.Services.AddTransient<IDesignation, DesignationService>();
 builder.Services.AddTransient<IEmployee, EmployeeService>();
+builder.Services.AddTransient<IEmployeeProduction, EmployeeProductionService>();
 builder.Services.AddTransient<ISalaryPackage, SalaryPackageService>();
 builder.Services.AddTransient<ISalaryMonthSetting, SalaryMonthSettingService>();
 builder.Services.AddTransient<ISalaryVoucher, SalaryVoucherService>();

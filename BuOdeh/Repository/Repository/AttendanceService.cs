@@ -91,6 +91,13 @@ namespace BuOdeh.Repository.Repository
             return attendance;
         }
 
+        public async Task<DailyAttendanceMaster> GetLatestAttendance(int employeeID)
+        {
+            DateTime today = DateTime.Now;
+            var attendance = await _context.DailyAttendanceMaster.Where(x => x.EmployeeID == employeeID).OrderByDescending(x => x.DailyAttendanceMasterId).FirstOrDefaultAsync();
+            return attendance;
+        }
+
         public List<DailyAttendanceMaster> GetAttendanceListByDateAndEmployeeId(int employeeID, DateTime date)
         {
             var attendance = _context.DailyAttendanceMaster.Where(x => x.EmployeeID == employeeID && x.Date.Date.Equals(date.Date)).ToList();

@@ -31,8 +31,7 @@
 @inject IAttendance _attendance
 @inject ApplicationDbContext _db
 @inject IAuditLogService _audit
-@inject IStartingStockDate _stockDate;
-@inject IKandangService _kandang
+@inject IStartingStockDate _stockDate
 
 @using BuOdeh.Components
 @using BuOdeh.Constants
@@ -551,6 +550,7 @@
 					</div>
 					<div class="card-body">
 						<a href="/app/recordattendance" class="btn btn-primary" style="width:100%; margin-bottom: 20px;">Form Absensi Harian</a>
+						<a href="/app/employeeproductionlist" class="btn btn-primary" style="width:100%; margin-bottom: 20px;">Daftar Produksi Karyawan</a>
 						<a href="/app/recordvacation" class="btn btn-primary" style="width:100%; margin-bottom: 20px;">Form Ijin / Libur</a>
 						<a href="/app/attendancelist" class="btn btn-primary" style="width:100%; margin-bottom: 20px;">Laporan Abensi Harian dan Gaji</a>
 						<a href="/app/salaryslip" class="btn btn-primary" style="width:100%; margin-bottom: 20px;">Slip Gaji</a>
@@ -938,9 +938,6 @@
 		JobDescAvailable = !string.IsNullOrEmpty(modelEmployee.JobDesc);
 		SOPAvailable = !string.IsNullOrEmpty(modelEmployee.SOP);
 		
-		SelectedKandang = "1";
-
-
 		await LoadDataPrices();
 		_render = true;
 
@@ -1014,11 +1011,11 @@
 
 	private async Task LoadProfilePhoto()
 	{
-		todayAttendances = await _attendance.GetTodaysAttendanceList(modelEmployee.EmployeeId);
-		if(todayAttendances.Count > 0)
+		var latestAttendance = await _attendance.GetLatestAttendance(modelEmployee.EmployeeId);
+		if (latestAttendance != null)
 		{
 			string userFolder = modelEmployee.EmployeeId + "_" + modelEmployee.EmployeeName.Replace(" ", "_");
-			CurrentPhotoUrl = "https://telurintanfarm.com/uploads/absensi/" + userFolder + "/" + todayAttendances[0].PhotoSelfie;
+			CurrentPhotoUrl = "https://buodeh.my.id/uploads/absensi/" + userFolder + "/" + latestAttendance.PhotoSelfie;
 		}
 	}
 

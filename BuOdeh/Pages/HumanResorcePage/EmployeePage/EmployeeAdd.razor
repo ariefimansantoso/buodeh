@@ -9,12 +9,11 @@
 @inject IPrivilege _privilege
 @inject NavigationManager navigation
 @attribute [Authorize]
-<PageTitle>Employee</PageTitle>
+<PageTitle>Data Karyawan</PageTitle>
 <div class="content">
 					<div class="page-header">
 						<div class="page-title">
-							<h4>Employee Add</h4>
-			<h6>Create new Employee</h6>
+							<h4>Tambah Data Karyawan</h4>							
 						</div>
 					</div>
 					<!-- /add -->
@@ -25,21 +24,21 @@
 							<div class="row">
 								<div class="col-lg-8 col-sm-6 col-12">
 									<div class="form-group">
-										<label>Employee Name</label>
+										<label>Nama Lengkap</label>
 										<input type="text" @bind="model.EmployeeName" >
-							<ValidationMessage For="@(() => model.EmployeeName)" />
+										<ValidationMessage For="@(() => model.EmployeeName)" />
 									</div>
 								</div>
-								<div class="col-lg-4 col-sm-6 col-12">
+								@* <div class="col-lg-4 col-sm-6 col-12">
 									<div class="form-group">
 										<label>Employee Code</label>
 										<input type="text" @bind="model.EmployeeCode" >
 							<ValidationMessage For="@(() => model.EmployeeCode)" />
 									</div>
-								</div>
+								</div> *@
 								<div class="col-lg-4 col-sm-6 col-12">
 									<div class="form-group">
-							<label>Designation</label>
+							<label>Jabatan</label>
 										<select class="form-control" @bind="model.DesignationId">
 								<option value="0">Pilih</option>
 											@if(listDesignation !=null)
@@ -53,9 +52,9 @@
 							<ValidationMessage For="@(() => model.DesignationId)" />
 									</div>
 								</div>
-								<div class="col-lg-4 col-sm-6 col-12">
+								@* <div class="col-lg-4 col-sm-6 col-12">
 									<div class="form-group">
-										<label>Salary Package</label>
+										<label>Paket Gaji</label>
 										<select class="form-control" @bind="model.DefaultPackageId">
 											<option value="0">Pilih</option>
 											@if(listPackage !=null)
@@ -68,7 +67,7 @@
 							</select>
 							
 									</div>
-								</div>
+								</div> *@
 								<div class="col-lg-4 col-sm-6 col-12">
 									<div class="form-group">
 									<label>Pilih Username/Login</label>
@@ -103,40 +102,40 @@
 					</div>
 					<div class="col-lg-4 col-sm-6 col-12">
 						<div class="form-group">
-							<label>Date of birth</label>
+							<label>Tanggal Lahir</label>
 							<RadzenDatePicker @bind-Value=@model.Dob DateFormat="d" Class="w-100" />
 							<ValidationMessage For="@(() => model.Dob)" />
 						</div>
 					</div>
 					<div class="col-lg-4 col-sm-6 col-12">
 									<div class="form-group">
-							<label>Marital Status</label>
+							<label>Status Perkawinan</label>
 							<select class="form-control" @bind="model.MaritalStatus">
-								<option value="Married">Married</option>
-								<option value="UnMarried">UnMarried</option>
+								<option value="Married">Menikah</option>
+								<option value="UnMarried">Belum Menikah</option>
 							</select>
 									</div>
 								</div>
 								<hr/>
 								<div class="col-lg-4 col-sm-6 col-12">
 									<div class="form-group">
-							<label>Gender</label>
+							<label>Jenis Kelamin</label>
 							<select class="form-control" @bind="model.Gender">
-								<option value="Male">Male</option>
-								<option value="Female">Female</option>
+								<option value="Male">Laki-laki</option>
+								<option value="Female">Perempuan</option>
 							</select>
 									</div>
 								</div>
 								<div class="col-lg-4 col-sm-6 col-12">
 									<div class="form-group">
-							<label>Qualification</label>
+							<label>Pendidikan</label>
 							<input type="text" @bind="model.Qualification">
 							<ValidationMessage For="@(() => model.Qualification)" />
 									</div>
 								</div>
 								<div class="col-lg-4 col-sm-6 col-12">
 									<div class="form-group">
-							<label>Address</label>
+							<label>Alamat</label>
 							<input type="text" @bind="model.Address">
 							<ValidationMessage For="@(() => model.Address)" />
 									</div>
@@ -144,14 +143,14 @@
 								<h6>Additional Field</h6>
 					<div class="col-lg-4 col-sm-6 col-12">
 						<div class="form-group">
-							<label>Phone Number</label>
+							<label>No. Tlp Rumah</label>
 							<input type="text" @bind="model.PhoneNumber">
 							<ValidationMessage For="@(() => model.PhoneNumber)" />
 						</div>
 					</div>
 					<div class="col-lg-4 col-sm-6 col-12">
 						<div class="form-group">
-							<label>Mobile Number</label>
+							<label>No. HP</label>
 							<input type="text" @bind="model.MobileNumber">
 							<ValidationMessage For="@(() => model.MobileNumber)" />
 						</div>
@@ -171,14 +170,15 @@
 						</div>
 					</div>
 					<div class="col-lg-4 col-sm-6 col-12">
-						<label>Salary Type</label>
+						<label>Tipe Gaji</label>
 						<select @bind="model.SalaryType" class="form-control">
-							<option value="Daily wage">Daily wage</option>
-							<option value="Monthly">Monthly</option>
+							<option value="Daily wage">Harian</option>
+							<option value="Monthly">Bulanan</option>
+							<option value="Production">Produksi</option>
 						</select>
 					</div>
 					<div class="col-lg-1 col-sm-6 col-12">
-						<label>Daily Wage</label>
+						<label>Jumlah Gaji</label>
 						<input type="text" class="form-control" @bind="model.DailyWage">
 					</div>
 								<div class="col-lg-12">
@@ -216,7 +216,7 @@
 		else
 		{
 			navigation.NavigateTo("/app/dashboard");
-			Snackbar.Add("You dont have to privilege..", Severity.Error);
+			Snackbar.Add("Anda tidak memiliki akses", Severity.Error);
 		}
 	}
 
@@ -236,8 +236,8 @@
 		listPackage = await _salaryPackage.GetAll();
 		listUsernames = await _user.GetUnassigned();
 		listSupervisors = await _employee.GetSupervisors();
-		model.DefaultPackageId = 0;
-		model.DesignationId = 0;
+		model.DefaultPackageId = 1;
+		model.DesignationId = 1;
 		model.MaritalStatus = "UnMarried";
 		model.SalaryType = "Daily wage";
 		StateHasChanged();
@@ -248,7 +248,7 @@
 		var isCheck = await _employee.CheckName(model.EmployeeName);
 		if (isCheck == true)
 		{
-			Snackbar.Add("Employee name already exists.", Severity.Info);
+			Snackbar.Add("Nama karyawan sudah terdaftar.", Severity.Info);
 		}
 		else
 		{
@@ -272,7 +272,7 @@
 			var result = await _employee.Save(model);
 				if (result > 0)
 				{
-					Snackbar.Add("Save Successfully.", Severity.Success);
+					Snackbar.Add("Berhasil simpan data.", Severity.Success);
 					StateHasChanged();
 				navigation.NavigateTo("/app/employee");
 				}

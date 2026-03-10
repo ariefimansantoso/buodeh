@@ -17,5 +17,6 @@ namespace BuOdeh.Data.HrPayroll
         public string Long { get; set; }
         public string PhotoSelfie { get; set; }
         public string AttendanceStatus { get; set; }
+        public string AttendanceType { get; set; }
     }
 }

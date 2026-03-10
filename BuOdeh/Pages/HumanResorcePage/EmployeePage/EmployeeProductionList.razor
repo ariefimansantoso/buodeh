@@ -1,0 +1,208 @@
+@page "/app/employeeproductionlist"
+@using System.Security.Claims
+@inject IEmployeeProduction _employeeProduction
+@inject IEmployee _employee
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+@inject IPrivilege _privilege
+@inject NavigationManager navigation
+@attribute [Authorize]
+
+<PageTitle>Daftar Produksi Karyawan</PageTitle>
+
+<div class="content">
+    <div class="page-header">
+        <div class="page-title">
+            <h4>Daftar Produksi Karyawan</h4>
+        </div>
+        <div class="page-btn">
+            <a href="/app/addemployeeproduction" class="btn btn-added">
+                <img src="assets/img/icons/plus.svg" alt="img" class="me-1">Tambah Data Produksi
+            </a>
+        </div>
+    </div>
+
+    <!-- Filter Section -->
+    <div class="card">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-lg-4 col-sm-6 col-12">
+                    <div class="form-group">
+                        <label>Pilih Karyawan</label>
+                        <select class="form-control" @bind="FilterEmployeeId">
+                            <option value="0">-- Pilih Karyawan --</option>
+                            @if (EmployeeList != null)
+                            {
+                                @foreach (var emp in EmployeeList)
+                                {
+                                    <option value="@emp.EmployeeId">@emp.EmployeeName</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                </div>
+
+                <div class="col-lg-3 col-sm-6 col-12">
+                    <div class="form-group">
+                        <label>Tanggal Awal</label>
+                        <RadzenDatePicker @bind-Value="FilterStartDate" DateFormat="dd-MM-yyyy" Class="w-100" />
+                    </div>
+                </div>
+
+                <div class="col-lg-3 col-sm-6 col-12">
+                    <div class="form-group">
+                        <label>Tanggal Akhir</label>
+                        <RadzenDatePicker @bind-Value="FilterEndDate" DateFormat="dd-MM-yyyy" Class="w-100" />
+                    </div>
+                </div>
+
+                <div class="col-lg-2 col-sm-6 col-12 d-flex align-items-end">
+                    <button class="btn btn-submit w-100" @onclick="SearchProduction">
+                        <i class="fa fa-search"></i> Cari
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Data Table Section -->
+    <div class="card table-top-20">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>                        
+                        <th>Nama Karyawan</th>
+                        <th>Tanggal Produksi</th>
+                        <th>Jumlah Produksi</th>
+                        <th>Satuan</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (ProductionList != null && ProductionList.Count > 0)
+                    {
+                        @foreach (var production in ProductionList)
+                        {
+                            var employee = EmployeeList?.FirstOrDefault(x => x.EmployeeId == production.EmployeeID);
+                            <tr>
+                                <td>@(employee?.EmployeeName ?? "N/A")</td>
+                                <td>@production.InputDate.ToString("dd-MM-yyyy")</td>
+                                <td>@production.NumberProduced.ToString("F2")</td>
+                                <td>@production.Satuan</td>
+                                <td>                                    
+                                    <button class="btn btn-sm btn-danger" @onclick="() => DeleteProduction(production.ID)">
+                                        <i class="fa fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="6" class="text-center text-muted">Tidak ada data produksi.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@code {
+    [CascadingParameter]
+    public Task<AuthenticationState> authenticationState { get; set; }
+    List<EmployeeProduction> ProductionList = new List<EmployeeProduction>();
+    List<EmployeeView> EmployeeList = new List<EmployeeView>();
+
+    int FilterEmployeeId = 0;
+    DateTime FilterStartDate = DateTime.Now.AddMonths(-1);
+    DateTime FilterEndDate = DateTime.Now;
+    string strMenu = "List Employee Production";
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await authenticationState;
+        var strRole = authState.User;
+        string strName = strRole.FindFirst(ClaimTypes.Role).Value;
+        var strShow = await _privilege.PriviliageCheck(strMenu, strName);
+        if (strShow.ShowAction == true)
+        {
+            await LoadData();
+        }
+        else
+        {
+            navigation.NavigateTo("/app/dashboard");
+            Snackbar.Add("Anda tidak memiliki akses", Severity.Error);
+        }
+    }
+
+    private async Task LoadData()
+    {
+        try
+        {
+            EmployeeList = await _employee.GetAll();
+            await SearchProduction();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add("Error loading data: " + ex.Message, Severity.Error);
+        }
+    }
+
+    private async Task SearchProduction()
+    {
+        try
+        {
+            if (FilterEmployeeId == 0)
+            {
+                // Get all productions in date range
+                var allProductions = await _employeeProduction.GetAll();
+                ProductionList = allProductions
+                    .Where(x => x.InputDate >= FilterStartDate && x.InputDate <= FilterEndDate)
+                    .OrderByDescending(x => x.InputDate)
+                    .ToList();
+            }
+            else
+            {
+                // Get productions for specific employee in date range
+                ProductionList = await _employeeProduction.GetByDateRange(FilterEmployeeId, FilterStartDate, FilterEndDate);
+            }
+
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add("Error searching production records: " + ex.Message, Severity.Error);
+        }
+    }
+
+    private async Task DeleteProduction(int id)
+    {
+        bool confirmed = await JSRuntime.InvokeAsync<bool>("confirm", "Apakah anda yakin mau menghapus data ini?");
+
+        if (confirmed)
+        {
+            try
+            {
+                var result = await _employeeProduction.Delete(id);
+                if (result > 0)
+                {
+                    Snackbar.Add("Data telah terhapus.", Severity.Success);
+                    await SearchProduction();
+                }
+                else
+                {
+                    Snackbar.Add("Gagal menghapus data.", Severity.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add("Error menghapus data: " + ex.Message, Severity.Error);
+            }
+        }
+    }
+
+    [Inject]
+    private IJSRuntime JSRuntime { get; set; }
+}

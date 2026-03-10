@@ -52,10 +52,10 @@
                     <div class="row">
                         <div class="col-lg-4 col-sm-6 col-12">
                             <div class="form-group">
-                                <label>Pilih Absensi Pagi/Sore</label>
+                                <label>Pilih Absensi Datang/Pulang</label>
                                 <select class="form-control" @onchange="WaktuAbsenChanged">
-                                    <option value="PAGI">Pagi</option>
-                                    <option value="SORE">Sore</option>
+                                    <option value="DATANG">DATANG</option>
+									<option value="PULANG">PULANG</option>	
                                 </select>
                             </div>
                         </div>
@@ -75,7 +75,7 @@
                     <div class="col-lg-4 col-sm-6 col-12">
                         <div class="form-group" style="text-align: center !important;">
                             <label style="font-size:24px; font-weight:bold;">Absensi berhasil disimpan.</label>
-                            <a href="/app/adminattendancelist" class="btn btn-primary">Kembali ke Laporan Absensi Karyawan</a>
+                            <a href="/app/adminrecordattendance" class="btn btn-primary">Kembali ke Form Absensi Karyawan</a>
                         </div>
                     </div>
                 </div>
@@ -143,12 +143,12 @@
     private async Task LoadData()
     {
         var authState = await authenticationState;
-		var currentUser = authState.User;
-		string userName = currentUser.FindFirst(ClaimTypes.Name).Value;
-		modelUser = await _user.UserProfile(userName);
-		modelEmployee = await _employee.GetbyUserId(modelUser.UserId);
+        var currentUser = authState.User;
+        string userName = currentUser.FindFirst(ClaimTypes.Name).Value;
+        modelUser = await _user.UserProfile(userName);
+        modelEmployee = await _employee.GetbyUserId(modelUser.UserId);
 
-        WaktuAbsen = "PAGI";
+        WaktuAbsen = "DATANG";
         if (modelUser.RoleId == RoleConstants.AdminRoleId)
         {
             DaftarKaryawan = await _employee.GetAllEmployeeActive();
@@ -195,14 +195,7 @@
 
         DateTime now = DateTime.Now;
         master.AddedDate = now;
-        if(WaktuAbsen == "PAGI")
-        {
-            AbsenDate = AbsenDate.Date.Add(new TimeSpan(6, 30, 0));
-        }
-        else
-        {
-            AbsenDate = AbsenDate.Date.Add(new TimeSpan(16, 00, 0));
-        }
+        AbsenDate = now;
 
         master.Date = AbsenDate;
 
@@ -211,9 +204,20 @@
         master.EmployeeID = SelectedEmployee.EmployeeId;
 
         // by default alpha, sampai nanti pas payroll baru di set masuk klo ada absensi 2 kali dalam sehari.
-        master.AttendanceStatus = "ALPHA";        
+        master.AttendanceStatus = "ALPHA";
+        master.AttendanceType = WaktuAbsen;
+        master.Narration = "Absensi " + WaktuAbsen + " pada " + now.ToString("dd-MM-yyyy HH:mm:ss") + " dengan lokasi LAT: " + master.Lat.ToString() + ", LONG: " + master.Long.ToString() + ".";
+        master.ModifyDate = now;
 
         master.PhotoSelfie = fileName;
+        if (WaktuAbsen == "DATANG")
+        {
+            master.AttendanceStatus = "ALPHA";
+        }
+        else if(WaktuAbsen == "PULANG")
+        {
+            master.AttendanceStatus = "MASUK";
+        }
 
         var result = await _attendance.Save(master);
 
@@ -225,7 +229,7 @@
         }
         else
         {
-            Snackbar.Add("Absensi gagal disimpan, silakan coba lagi, atau hubungi admin.", Severity.Error);
+            Snackbar.Add("Absensi gagal disimpan, silakan coba lagi, atau hubungi IT.", Severity.Error);
         }
     }
 

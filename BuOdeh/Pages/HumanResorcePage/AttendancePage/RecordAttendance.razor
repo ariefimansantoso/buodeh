@@ -33,7 +33,11 @@
                         <div class="row">
                             <div class="col-lg-4 col-sm-6 col-12">
                                 <div class="form-group" style="text-align: center !important;">
-                                    <label style="font-size:24px; font-weight:bold;">@WaktuAbsensi</label>
+                                    <label style="font-size:24px; font-weight:bold;">Pilih Waktu Absensi</label>
+                                    <select class="form-control" @bind="WaktuAbsensi">
+								        <option value="DATANG">DATANG</option>
+										<option value="PULANG">PULANG</option>	   
+							        </select>
                                 </div>
                             </div>
                         </div>
@@ -74,7 +78,7 @@
                         <div class="row">
                             <div class="col-lg-4 col-sm-6 col-12">
                                 <div class="form-group" style="text-align: center !important;">
-                                    <label style="font-size:24px; font-weight:bold;">Anda tidak berada di lokasi kandang.</label>
+                                    <label style="font-size:24px; font-weight:bold;">Anda tidak berada di lokasi produksi maupun kantor.</label>
                                 </div>
                             </div>
                         </div>
@@ -96,15 +100,15 @@
                 <div class="row">
                     <div class="col-lg-4 col-sm-6 col-12">
                         <div class="form-group" style="text-align: center !important;">
-                            @if (AttendanceCompletedForMorning && AttendanceCompletedForToday == false)
+                            @if (AttendanceCompletedDatang && !AttendanceCompletedPulang)
                             {
-                                <label style="font-size:24px; font-weight:bold;">Absensi pagi sudah, sore jangan lupa ya.</label>
+                                <label style="font-size:24px; font-weight:bold;">Absensi kedatangan sudah, absen pulang jangan lupa ya.</label>
                             }
-                            else if (AttendanceCompletedForMorning && AttendanceCompletedForToday)
+                            else if (AttendanceCompletedDatang && AttendanceCompletedPulang)
                             {
                                 <label style="font-size:24px; font-weight:bold;">Absensi hari ini sudah lengkap.</label>
                             }
-                            else if (!AttendanceCompletedForMorning && !AttendanceCompletedForToday)
+                            else if (!AttendanceCompletedDatang && !AttendanceCompletedPulang)
                             {
                                 <label style="font-size:24px; font-weight:bold;">Anda belum absen sama sekali hari ini.</label>
                             }
@@ -130,12 +134,12 @@
     private string PhotoSelfie;
     private string PhotoViewer;
     private Location location;
-    private string WaktuAbsensi;
+    private string WaktuAbsensi = "DATANG";
 
     private bool AttendanceSubmitted;
     private bool WithinBoundaries;
-    private bool AttendanceCompletedForToday;
-    private bool AttendanceCompletedForMorning;
+    private bool AttendanceCompletedDatang;
+    private bool AttendanceCompletedPulang;
     private bool AttendanceFormOpen;
 
     MemoryStream uploadedFileStream;
@@ -207,8 +211,8 @@
             string userName = currentUser.FindFirst(ClaimTypes.Name).Value;
             modelUser = await _user.UserProfile(userName);
             modelEmployee = await _employee.GetbyUserId(modelUser.UserId);
-            AttendanceCompletedForMorning = false;
-            AttendanceCompletedForToday = false;
+            AttendanceCompletedDatang = false;
+            AttendanceCompletedPulang = false;
             AttendanceFormOpen = false;
 
             string auditMessage = "User dengan nama " + modelEmployee.EmployeeName + " mengunjungi Form Absensi.";
@@ -227,9 +231,9 @@
                 WithinBoundaries = true;
             }
 
-            auditMessage = "Apakah di area pabrik? " + (WithinBoundaries ? "Ya" : "Tidak");
+            auditMessage = "Apakah di area produksi? " + (WithinBoundaries ? "Ya" : "Tidak");
             await _audit.LogAsync(LogTypes.LogInfo, "Form Absensi", auditMessage, modelEmployee.EmployeeId, modelEmployee.EmployeeName);
-
+            AttendanceFormOpen = true;
             await LoadData();
 
             StateHasChanged();
@@ -249,30 +253,19 @@
         PhotoViewer = string.Empty;
         DateTime now = DateTime.Now;
 
-        DateTime nineAM = new DateTime(now.Year, now.Month, now.Day, 9, 0, 0);
-        DateTime threePM = new DateTime(now.Year, now.Month, now.Day, 15, 0, 0);
+        var latestAttendance = await _attendance.GetLatestAttendance(modelEmployee.EmployeeId);
 
-        //if (modelEmployee.EmployeeId != 5 && modelEmployee.EmployeeId != 6)
-        //{// kecuali dev dan owner
-            todayAttendances = await _attendance.GetTodaysAttendanceList(modelEmployee.EmployeeId);
-            if (todayAttendances.Count == 1 && todayAttendances[0].Date <= nineAM)
-            {
-                AttendanceCompletedForMorning = true;
-                auditMessage.AppendLine(modelEmployee.EmployeeName + ": sudah absen pagi.");
-            }
-            else if (todayAttendances.Count == 1 && todayAttendances[0].Date >= threePM)
-            {
-                AttendanceCompletedForMorning = true;
-                AttendanceCompletedForToday = false;
-                auditMessage.AppendLine(modelEmployee.EmployeeName + ": belum absen sore.");
-            }
-            else if (todayAttendances.Count == 2)
-            {
-                AttendanceCompletedForMorning = true;
-                AttendanceCompletedForToday = true;
-                auditMessage.AppendLine(modelEmployee.EmployeeName + ": absensi sudah lengkap.");
-            }
-        //}
+        if(latestAttendance.AttendanceType == "DATANG")
+        {
+            AttendanceCompletedDatang = true;
+            auditMessage.AppendLine(modelEmployee.EmployeeName + ": sudah absen kedatangan.");
+            auditMessage.AppendLine(modelEmployee.EmployeeName + ": belum absen pulang.");
+        }        
+        else if (latestAttendance.AttendanceType == "PULANG")
+        {
+            AttendanceCompletedPulang = true;
+            auditMessage.AppendLine(modelEmployee.EmployeeName + ": sudah absen pulang.");
+        }   
 
         master.Date = now;
         String sDate = now.ToString();
@@ -288,53 +281,9 @@
 
         auditMessage.AppendLine(modelEmployee.EmployeeName + ": LAT: " + location.Latitude.ToString() + ", LONG: " + location.Longitude.ToString() + ".");
 
-        //if (modelEmployee.EmployeeId != 5 && modelEmployee.EmployeeId != 6)
-        //{
-            var hour = now.Hour;
-            if (hour >= 5 && hour <= 9)
-            {
-                if (AttendanceCompletedForMorning)
-                {
-                    AttendanceFormOpen = false;
-                    auditMessage.AppendLine(modelEmployee.EmployeeName + ": absen pagi sudah, form tertutup.");
-                }
-                else
-                {
-                    AttendanceFormOpen = true;
-                    auditMessage.AppendLine(modelEmployee.EmployeeName + ": absen pagi belum, form terbuka.");
-                }
-                WaktuAbsensi = "Absensi Kedatangan";
-            }
-            else if (hour > 15)
-            {
-                if (AttendanceCompletedForToday)
-                {
-                    AttendanceFormOpen = false;
-                    auditMessage.AppendLine(modelEmployee.EmployeeName + ": absen sore sudah, form terturup.");
-                }
-                else
-                {
-                    AttendanceFormOpen = true;
-                    auditMessage.AppendLine(modelEmployee.EmployeeName + ": absen sore belum, form terbuka.");
-                }
+        AttendanceSubmitted = false;
 
-                WaktuAbsensi = "Absensi Pulang";
-            }
-            else
-            {
-                AttendanceFormOpen = false;
-                auditMessage.AppendLine("Form tertutup, diluar waktu absen: " + DateTime.Now.ToString("dd/MM/yyyy hh:mm"));
-            }
-
-            AttendanceSubmitted = false;
-
-            await _audit.LogAsync(LogTypes.LogInfo, "Form Absensi", auditMessage.ToString(), modelEmployee.EmployeeId, modelEmployee.EmployeeName);
-        // }
-        // else 
-        // {
-        //     AttendanceFormOpen = true;
-        //     AttendanceSubmitted = false;
-        // }
+        await _audit.LogAsync(LogTypes.LogInfo, "Form Absensi", auditMessage.ToString(), modelEmployee.EmployeeId, modelEmployee.EmployeeName);
 
         StateHasChanged();
     }
@@ -365,11 +314,21 @@
             master.Lat = location.Latitude.ToString();
             master.Long = location.Longitude.ToString();
             master.EmployeeID = modelEmployee.EmployeeId;
+            master.AttendanceType = WaktuAbsensi;
 
             // by default alpha, sampai nanti pas payroll baru di set masuk klo ada absensi 2 kali dalam sehari.
-            master.AttendanceStatus = "ALPHA";
+            if (WaktuAbsensi == "DATANG")
+            {
+                master.AttendanceStatus = "ALPHA";
+            }
+            else if(WaktuAbsensi == "PULANG")
+            {
+                master.AttendanceStatus = "MASUK";
+            }
 
             master.PhotoSelfie = fileName;
+            master.Narration = "Absensi " + WaktuAbsensi + " pada " + now.ToString("dd-MM-yyyy HH:mm:ss") + " dengan lokasi LAT: " + location.Latitude.ToString() + ", LONG: " + location.Longitude.ToString() + ".";
+            master.ModifyDate = now;
 
             var result = await _attendance.Save(master);
 
@@ -380,21 +339,18 @@
                 auditMessage.AppendLine(WaktuAbsensi + ": Absensi berhasil disimpan.");
                 await _audit.LogAsync(LogTypes.LogInfo, "Form Absensi", auditMessage.ToString(), modelEmployee.EmployeeId, modelEmployee.EmployeeName);
 
-                //if (modelEmployee.EmployeeId != 5 && modelEmployee.EmployeeId != 6)
-                //{
-                    var perijinan = _db.Perijinan.FirstOrDefault(x => x.EmployeeID == modelEmployee.EmployeeId && x.IsApproved.HasValue && x.IsApproved.Value == true && x.ForDate.Date == now.Date &&
-                                    (x.SubmittedFor == "LIBUR" || x.SubmittedFor == "IJIN" || x.SubmittedFor == "SAKIT"));
-                    if (perijinan != null)
-                    {
-                        perijinan.IsApproved = null;
-                        perijinan.ApprovalDescription = "Dibatalkan otomatis karena masuk kerja.";
-                        await _db.SaveChangesAsync();
+                var perijinan = _db.Perijinan.FirstOrDefault(x => x.EmployeeID == modelEmployee.EmployeeId && x.IsApproved.HasValue && x.IsApproved.Value == true && x.ForDate.Date == now.Date &&
+                                (x.SubmittedFor == "LIBUR" || x.SubmittedFor == "IJIN" || x.SubmittedFor == "SAKIT"));
+                if (perijinan != null)
+                {
+                    perijinan.IsApproved = null;
+                    perijinan.ApprovalDescription = "Dibatalkan otomatis karena masuk kerja.";
+                    await _db.SaveChangesAsync();
 
-                        auditMessage.AppendLine("Perijinan: " + perijinan.SubmittedFor + " berhasil dicancel.");
-                        await _audit.LogAsync(LogTypes.LogInfo, "Perijinan", auditMessage.ToString(), modelEmployee.EmployeeId, modelEmployee.EmployeeName);
-
-                    }
-                //}
+                    auditMessage.AppendLine("Perijinan: " + perijinan.SubmittedFor + " berhasil dicancel.");
+                    await _audit.LogAsync(LogTypes.LogInfo, "Perijinan", auditMessage.ToString(), modelEmployee.EmployeeId, modelEmployee.EmployeeName);
+                }
+                
                 StateHasChanged();
             }
             else

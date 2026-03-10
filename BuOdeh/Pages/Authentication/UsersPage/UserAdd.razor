@@ -84,14 +84,14 @@
 					<!-- /add -->
 				</div>
 @code {
-	[CascadingParameter]
-	public Task<AuthenticationState> authenticationState { get; set; }
-	UserMaster model = new UserMaster();
-	List<Role> listRole;
-	string strMenu = "Users";
+		[CascadingParameter]
+		public Task<AuthenticationState> authenticationState { get; set; }
+		UserMaster model = new UserMaster();
+		List<Role> listRole;
+		string strMenu = "Users";
 	protected override async Task OnInitializedAsync()
 	{
-	//CheckPriviliagee
+		//CheckPriviliagee
 		var authState = await authenticationState;
 		var strRole = authState.User;
 		string strName = strRole.FindFirst(ClaimTypes.Role).Value;
@@ -132,17 +132,24 @@
 		{
 			model.Image = string.Empty;
 			model.Active = true;
-			var result = await _user.Save(model);
+			try {
+				var result = await _user.Save(model);
 
-			if (result > 0)
-			{
-				Snackbar.Add("Saved Successfully.", Severity.Success);
-				navigation.NavigateTo("/app/user");
+				if (result > 0)
+				{
+					Snackbar.Add("Saved Successfully.", Severity.Success);
+					navigation.NavigateTo("/app/user");
+				}
+				else
+				{
+					Snackbar.Add("Transaction Failed.", Severity.Error);
+				}
+
 			}
-                    else
-                    {
-				Snackbar.Add("Transaction Failed.", Severity.Error);
-                    }
-                }
-            }
+			catch (Exception ex)
+			{
+				Snackbar.Add("Transaction Failed: " + ex.InnerException.Message + ex.InnerException.StackTrace, Severity.Error);
+			}
+		}
 	}
+}
